@@ -37,9 +37,6 @@
       "CompanyPrefix": {
           "type": "string"
       },
-      "VMamount": {
-          "type": "number"
-      },
       "VM2Name": {
           "type": "string"
       },
