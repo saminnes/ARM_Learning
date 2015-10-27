@@ -34,6 +34,12 @@
         "description": "Size of the VM"
       }
     },
+      "VMprefix": {
+          "type": "string"
+      },
+      "VMamount": {
+          "type": "number"
+      },
       "VM2Name": {
           "type": "string"
       },
