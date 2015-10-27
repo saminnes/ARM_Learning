@@ -34,7 +34,7 @@
         "description": "Size of the VM"
       }
     },
-      "VMprefix": {
+      "CompanyPrefix": {
           "type": "string"
       },
       "VMamount": {
@@ -71,7 +71,7 @@
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
     "imageSKU": "2012-R2-Datacenter",
-    "vnetName": "myVNET",
+    "vnetName": "[concat(parameters('CompanyPrefix'), VNET",
     "publicIPAddressName": "myPublicIP",
     "lbName": "myLB",
     "vmNamePrefix": "myVM",
