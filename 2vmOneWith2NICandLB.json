@@ -68,7 +68,6 @@
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
     "imageSKU": "2012-R2-Datacenter",
-    "VNETname": "VNET"
     "vnetName": "[concat(parameters('CompanyPrefix'), 'VNET')]",
     "publicIPAddressName": "myPublicIP",
     "lbName": "myLB",
