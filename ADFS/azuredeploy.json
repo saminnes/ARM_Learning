@@ -406,7 +406,9 @@
             "adminPassword": "[parameters('adminPassword')]"
           }
         }
-        {
+      }
+    },
+      {
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "vm/ADFSserver",
       "apiVersion": "2015-05-01-preview",
