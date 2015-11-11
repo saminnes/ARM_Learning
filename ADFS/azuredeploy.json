@@ -422,7 +422,7 @@
         "typeHandlerVersion": "2.8",
         "settings": {
           "ModulesUrl": "[concat(parameters('assetLocation'),'Configuration.zip')]",
-          "ConfigurationFunction": "ConfigurationADFS.ps1\\ADFSserver",
+          "ConfigurationFunction": "Configuration.ps1\\DomainJoin",
           "Properties": {
             "DomainName": "[parameters('domainName')]",
             "AdminCreds": {
