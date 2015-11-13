@@ -423,6 +423,7 @@
         "settings": {
           "ModulesUrl": "[concat(parameters('assetLocation'),'Configuration.zip')]",
           "ConfigurationFunction": "Configuration.ps1\\DomainJoin",
+          
           "Properties": {
             "DomainName": "[parameters('domainName')]",
             "AdminCreds": {
