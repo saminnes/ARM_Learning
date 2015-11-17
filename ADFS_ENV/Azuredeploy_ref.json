@@ -181,7 +181,7 @@
                        }
                   },
                   {
-                     "name": "[variables('AppSubnetName')]",
+                     "name": "[variables('WAPSubnetName')]",
                      "properties": {
                         "addressPrefix": "[variables('WAPPrefix')]",
                         "networkSecurityGroup": {
@@ -206,8 +206,8 @@
                         "protocol": "Tcp",
                         "sourcePortRange": "*",
                         "destinationPortRange": "3389",
-                        "sourceAddressPrefix": "VIRTUAL_NETWORK",
-                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "sourceAddressPrefix": "VirtualNetwork",
+                        "destinationAddressPrefix": "VirtualNetwork",
                         "access": "Allow",
                         "priority": 101,
                         "direction": "Inbound"
@@ -263,7 +263,7 @@
                         "sourcePortRange": "*",
                         "destinationPortRange": "*",
                         "sourceAddressPrefix": "*",
-                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "destinationAddressPrefix": "VirtualNetwork",
                         "access": "Deny",
                         "priority": 200,
                         "direction": "Outbound"
@@ -276,8 +276,8 @@
                         "protocol": "Tcp",
                         "sourcePortRange": "*",
                         "destinationPortRange": "443",
-                        "sourceAddressPrefix": "VIRTUAL_NETWORK",
-                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "sourceAddressPrefix": "VirtualNetwork",
+                        "destinationAddressPrefix": "VirtualNetwork",
                         "access": "Allow",
                         "priority": 100,
                         "direction": "Inbound"
@@ -290,8 +290,8 @@
                         "protocol": "*",
                         "sourcePortRange": "*",
                         "destinationPortRange": "*",
-                        "sourceAddressPrefix": "VIRTUAL_NETWORK",
-                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "sourceAddressPrefix": "VirtualNetwork",
+                        "destinationAddressPrefix": "VirtualNetwork",
                         "access": "Deny",
                         "priority": 200,
                         "direction": "Inbound"
