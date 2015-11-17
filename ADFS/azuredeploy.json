@@ -306,7 +306,7 @@
           },
           "DNSServerAddress": {
             "value": [
-              "[variables('dnsServerPrivateIp')]"
+              "[variables('dnsServerPrivateIp','dnsServerPrivateIp2')]"
             ]
           }
         }
