@@ -64,13 +64,13 @@
     "imageOffer": "WindowsServer",
     "vnetAddressRange": "10.0.0.0/16",
     "TrustedSubnetAddressRange": "10.0.0.0/24",
-    "DMZSubnetAddressRange": "10.0.1.0/24",
+    "UntrustedSubnetAddressRange": "10.0.1.0/24",
     "dnsServerPrivateIp": "10.0.0.8",
     "dnsServerPrivateIp2": "10.0.0.9",
     "ExtLoadBalancer": "PUBLB",
     "IntLoadBalancer": "PRIVLB",
     "TrustedSubnetName": "Trusted",
-    "DMZSubnetName": "DMZ",
+    "UntrustedSubnetName": "DMZ",
     "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','VNET'),'/subnets/',variables('TrustedSubnetName'))]"
   },
   "resources": [
@@ -114,54 +114,15 @@
             }
           },
           {
-            "name": "[variables('DMZSubnetName')]",
+            "name": "[variables('UntrustedSubnetName')]",
             "properties": {
-              "addressPrefix": "[variables('DMZSubnetAddressRange')]"
+              "addressPrefix": "[variables('UntrustedSubnetAddressRange')]"
             }
           }
         ]
       }
     },
-    {
-      "apiVersion": "2015-05-01-preview",
-      "name": "loadBalancer",
-      "type": "Microsoft.Network/loadBalancers",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "Microsoft.Network/publicIPAddresses/publicIp"
-      ],
-      "properties": {
-        "frontendIPConfigurations": [
-          {
-            "name": "LBFE",
-            "properties": {
-              "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses','publicIp')]"
-              }
-            }
-          }
-        ],
-        "backendAddressPools": [
-          {
-            "name": "LBBAP"
-          }
-        ],
-        "inboundNatRules": [
-          {
-            "name": "rdp-vm",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','loadBalancer'),'/frontendIPConfigurations/LBFE')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": 3389,
-              "backendPort": 3389,
-              "enableFloatingIP": false
-            }
-          }
-        ]
-      }
-    },
+
     {
       "apiVersion": "2015-05-01-preview",
       "type": "Microsoft.Network/networkInterfaces",
