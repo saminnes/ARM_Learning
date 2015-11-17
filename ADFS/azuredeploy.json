@@ -113,6 +113,12 @@
               "addressPrefix": "[variables('TrustedSubnetAddressRange')]"
             }
           }
+                    {
+            "name": "[variables('DMZSubnetName')]",
+            "properties": {
+              "addressPrefix": "[variables('DMZSubnetAddressRange')]"
+            }
+          }
         ]
       }
     },
@@ -298,15 +304,10 @@
           "subnetRange": {
             "value": "[variables('TrustedSubnetAddressRange')]"
           },
-          "subnetName": {
-            "value": "[variables('DMZSubnetName')]"
-          },
-          "subnetRange": {
-            "value": "[variables('DMZSubnetAddressRange')]"
-          },
+        
           "DNSServerAddress": {
             "value": [
-              "[variables('dnsServerPrivateIp','dnsServerPrivateIp2')]"
+              "[variables('dnsServerPrivateIp')]"
             ]
           }
         }
