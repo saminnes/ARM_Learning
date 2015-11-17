@@ -65,6 +65,7 @@
     "vnetAddressRange": "10.0.0.0/16",
     "subnetAddressRange": "10.0.0.0/24",
     "dnsServerPrivateIp": "10.0.0.8",
+    "dnsServerPrivateIp2": "10.0.0.9",
     "subnetName": "Subnet",
     "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','VNET'),'/subnets/',variables('subnetName'))]"
   },
@@ -177,7 +178,7 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "dc-vm",
+      "name": "VM-DC1",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts',parameters('newStorageAccount'))]",
@@ -188,7 +189,7 @@
           "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
-          "computername": "dc",
+          "computername": "VM-DC1",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]"
         },
@@ -202,7 +203,7 @@
           "osDisk": {
             "name": "osdisk",
             "vhd": {
-              "uri": "[concat('http://',parameters('newStorageAccount'),'.blob.core.windows.net/vhds/dc-vm-osdisk.vhd')]"
+              "uri": "[concat('http://',parameters('newStorageAccount'),'.blob.core.windows.net/vhds/VM-DC1-osdisk.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -211,7 +212,7 @@
             {
               "name": "dc-vm-data-disk1",
               "vhd": {
-                "Uri": "[concat('http://',parameters('newStorageAccount'),'.blob.core.windows.net/vhds/dc-vm-data-disk1.vhd')]"
+                "Uri": "[concat('http://',parameters('newStorageAccount'),'.blob.core.windows.net/vhds/VM-DC1-data-disk1.vhd')]"
               },
               "caching": "None",
               "createOption": "Empty",
@@ -237,11 +238,11 @@
       "resources": [
         {
           "type": "Microsoft.Compute/virtualMachines/extensions",
-          "name": "dc-vm/createadforest",
+          "name": "VM-DC1/createadforest",
           "apiVersion": "2015-05-01-preview",
           "location": "[resourceGroup().location]",
           "dependsOn": [
-            "[resourceId('Microsoft.Compute/virtualMachines', 'dc-vm')]"
+            "[resourceId('Microsoft.Compute/virtualMachines', 'VM-DC1')]"
           ],
           "properties": {
             "publisher": "Microsoft.Powershell",
@@ -272,7 +273,7 @@
       "type": "Microsoft.Resources/deployments",
       "name": "updatevnetdns",
       "dependsOn": [
-        "Microsoft.Compute/virtualMachines/dc-vm/extensions/createadforest"
+        "Microsoft.Compute/virtualMachines/VM-DC1/extensions/createadforest"
       ],
       "properties": {
         "mode": "Incremental",
