@@ -192,6 +192,7 @@
                ]
             }
          },
+        {
             "apiVersion": "[variables('apiVer')]",
             "type": "Microsoft.Network/networkSecurityGroups",
             "name": "[variables('WAPNsgname')]",
@@ -298,7 +299,9 @@
                   }
                ]
             }
-         },
+         }
+]
+}
 
 
 
