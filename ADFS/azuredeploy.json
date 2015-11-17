@@ -112,8 +112,8 @@
             "properties": {
               "addressPrefix": "[variables('TrustedSubnetAddressRange')]"
             }
-          }
-                    {
+          },
+          {
             "name": "[variables('DMZSubnetName')]",
             "properties": {
               "addressPrefix": "[variables('DMZSubnetAddressRange')]"
