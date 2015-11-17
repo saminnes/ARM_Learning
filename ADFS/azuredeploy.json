@@ -63,11 +63,15 @@
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
     "vnetAddressRange": "10.0.0.0/16",
-    "subnetAddressRange": "10.0.0.0/24",
+    "TrustedSubnetAddressRange": "10.0.0.0/24",
+    "DMZSubnetAddressRange": "10.0.1.0/24",
     "dnsServerPrivateIp": "10.0.0.8",
     "dnsServerPrivateIp2": "10.0.0.9",
-    "subnetName": "Subnet",
-    "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','VNET'),'/subnets/',variables('subnetName'))]"
+    "ExtLoadBalancer": "PUBLB",
+    "IntLoadBalancer": "PRIVLB",
+    "TrustedSubnetName": "Trusted",
+    "DMZSubnetName": "DMZ",
+    "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','VNET'),'/subnets/',variables('TrustedSubnetName'))]"
   },
   "resources": [
     {
@@ -104,9 +108,9 @@
         },
         "subnets": [
           {
-            "name": "[variables('subnetName')]",
+            "name": "[variables('TrustedSubnetName')]",
             "properties": {
-              "addressPrefix": "[variables('subnetAddressRange')]"
+              "addressPrefix": "[variables('TrustedSubnetAddressRange')]"
             }
           }
         ]
@@ -289,10 +293,16 @@
             "value": "[variables('vnetAddressRange')]"
           },
           "subnetName": {
-            "value": "[variables('subnetName')]"
+            "value": "[variables('TrustedSubnetName')]"
           },
           "subnetRange": {
-            "value": "[variables('subnetAddressRange')]"
+            "value": "[variables('TrustedSubnetAddressRange')]"
+          },
+          "subnetName": {
+            "value": "[variables('DMZSubnetName')]"
+          },
+          "subnetRange": {
+            "value": "[variables('DMZSubnetAddressRange')]"
           },
           "DNSServerAddress": {
             "value": [
