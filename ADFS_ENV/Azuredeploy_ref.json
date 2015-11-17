@@ -1,0 +1,304 @@
+{
+   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "contentVersion": "1.0.0.0",
+   "parameters": {
+      "location": {
+         "type": "string",
+         "allowedValues": [
+            "East US",
+            "West US",
+            "North Central US",
+            "South Central US",
+            "Central US",
+            "West Europe",
+            "North Europe",
+            "East Asia",
+            "South East Asia",
+            "Japan West",
+            "Japan East"
+         ],
+         "metadata": {
+            "description": "Deployment location"
+         }
+      },
+      "newStorageAccountName": {
+         "type": "string",
+         "metadata": {
+            "description": "Unique DNS Name for the Storage Account where the Virtual Machine's disks will be placed."
+         }
+      },
+      "adminUsername": {
+         "type": "string",
+         "metadata": {
+            "description": "Username for the Virtual Machine."
+         }
+      },
+      "adminPassword": {
+         "type": "securestring",
+         "metadata": {
+            "description": "Password for the Virtual Machine."
+         }
+      },
+      "DCVmNamePrefix": {
+         "type": "string",
+         "defaultValue": "SCWIDC",
+         "metadata": {
+            "description": "Prefix for the name of Domain Controller servers"
+         }
+      },
+      "ADFSVmNamePrefix": {
+         "type": "string",
+         "defaultValue": "SCWIADFS",
+         "metadata": {
+            "description": "Prefix for the name of ADFS Farm servers"
+         }
+      },
+      "WAPVmNamePrefix": {
+         "type": "string",
+         "defaultValue": "SCWIWAP",
+         "metadata": {
+            "description": "Prefix for the name of ADFS Farm servers"
+         }
+      },
+      "vmSize": {
+         "type": "string",
+         "defaultValue": "Standard_D2",
+         "metadata": {
+            "description": "Size of the VM"
+         }
+      },
+      "WAPServersPublicIPPrefix": {
+         "type": "string",
+         "defaultValue": "SCWIWAPserverpubIP",
+         "metadata": {
+            "description": "Prefix for the name of ADFS WAP servers IP"
+         }
+     },
+      "DCCapacity": {
+         "type": "int",
+         "defaultValue": 2,
+         "metadata": {
+            "description": "Number of instances of Domain Controllers"
+         }
+      },
+      "ADFSILB": {
+         "type": "string",
+         "defaultValue": "ILBforADFS",
+         "metadata": {
+            "description": "ADFS Internal Load Balancer name"
+         }
+      },
+      "windowsOSVersion": {
+         "type": "string",
+         "defaultValue": "2012-R2-Datacenter",
+         "allowedValues": [
+            "2008-R2-SP1",
+            "2012-Datacenter",
+            "2012-R2-Datacenter"
+         ],
+         "metadata": {
+            "description": "The Windows version for the VM. This will pick a fully patched image of this given Windows version. Allowed values: 2008-R2-SP1, 2012-Datacenter, 2012-R2-Datacenter."
+         }
+        }
+   },
+      "variables": {
+         "imagePublisher": "MicrosoftWindowsServer",
+         "imageOffer": "WindowsServer",
+         "OSDiskName": "osdiskforwindowssimple",
+         "storageAccountType": "Standard_LRS",
+         "vmStorageAccountContainerName": "vhds",
+         "vmSize": "Standard_A2",
+         "VNetName": "ADFSVNet",
+         "TrustedSubnetName": "TrustedSubnet",
+         "WAPSubnetName": "WAPSubnet",
+         "vnetID": "[resourceId('Microsoft.Network/virtualNetworks', variables('VNetName'))]",
+         "TrustedSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('TrustedSubnetName'))]",
+         "WAPSubnetRef": "[concat(variables('vnetID'),'/subnets/', variables('WAPSubnetName'))]",
+         "VNetAddressPrefix": "10.1.0.0/16",
+         "TrustedPrefix": "10.1.0.0/24",
+         "WAPPrefix": "10.1.1.0/24",
+         "DCAvailabilitySetName": "DCAvSet",
+         "WAPAvailabilitySetName": "WAPAvSet",
+         "ADFSAvailabilitySetName": "ADFSAvSet",
+         "DCServerIP1": "10.1.0.4",
+         "DCServerIP2": "10.1.0.5",
+         "WAPNsgname": "WAPNSG",
+         "ILBIP": "10.1.0.100",
+         "ADFSIP1": "10.1.0.14",
+         "ADFSIP2": "10.1.0.15",
+         "WAPIP1": "10.1.1.4",
+         "WAPIP2": "10.1.1.5",
+         "IlbID": "[resourceId('Microsoft.Network/loadBalancers',parameters('ADFSILB'))]",
+         "privateIPConfigID": "[concat(variables('IlbID'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
+         "IlbPoolID": "[concat(variables('IlbID'),'/backendAddressPools/BackendPool1')]",
+         "IlbProbeID": "[concat(variables('IlbID'),'/probes/tcpProbe')]",
+         "DCNicName": "DCNic",
+         "ADFSNicName": "ADFSNic",
+         "WAPNicName": "WAPNic",
+         "DCScaleCount" : 2,
+         "WAPScaleCount" : 2,
+         "ADFSScaleCount" : 2,
+         "apiVer": "2015-06-15"
+      },
+      "resources": [
+         {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[parameters('newStorageAccountName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+               "accountType": "[variables('storageAccountType')]"
+            }
+         },
+         {
+            "apiVersion": "[variables('apiVer')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[parameters('WAPServersPublicIPPrefix')]",
+            "location": "[parameters('location')]",
+            "properties": {
+            "publicIPAllocationMethod": "Static"
+          }
+},
+        {
+            "apiVersion": "[variables('apiVer')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('VNetName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('WAPNsgname'))]"
+            ],
+            "properties": {
+               "addressSpace": {
+                  "addressPrefixes": [
+                     "[variables('VNetAddressPrefix')]"
+                  ]
+               },
+               "subnets": [
+                  {
+                     "name": "[variables('TrustedSubnetName')]",
+                     "properties": {
+                        "addressPrefix": "[variables('TrustedPrefix')]"
+                       }
+                  },
+                  {
+                     "name": "[variables('AppSubnetName')]",
+                     "properties": {
+                        "addressPrefix": "[variables('WAPPrefix')]",
+                        "networkSecurityGroup": {
+                           "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('WAPNsgname'))]"
+                        }
+                     }
+                  }
+               ]
+            }
+         },
+            "apiVersion": "[variables('apiVer')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[variables('WAPNsgname')]",
+            "location": "[parameters('location')]",
+            "properties": {
+               "securityRules": [
+                  {
+                     "name": "rdp_rule",
+                     "properties": {
+                        "description": "Allow Inbound RDP from ALL Internal Networks",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "3389",
+                        "sourceAddressPrefix": "VIRTUAL_NETWORK",
+                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "access": "Allow",
+                        "priority": 101,
+                        "direction": "Inbound"
+                     }
+                  },
+                  {
+                     "name": "web_rule",
+                     "properties": {
+                        "description": "Allow Inbound HTTPS from Internet",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "443",
+                        "sourceAddressPrefix": "Internet",
+                        "destinationAddressPrefix": "[variables('WAPPrefix')]",
+                        "access": "Allow",
+                        "priority": 110,
+                        "direction": "Inbound"
+                     }
+                  },
+                  {
+                     "name": "App_subnet_rule",
+                     "properties": {
+                        "description": "Outbound to App",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "*",
+                        "destinationAddressPrefix": "[variables('WAPPrefix')]",
+                        "access": "Allow",
+                        "priority": 1000,
+                        "direction": "Outbound"
+                     }
+                  },
+                 {
+                     "name": "rdp_internet_rule",
+                     "properties": {
+                        "description": "Allow Inbound RDP from Internet",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "3389",
+                        "sourceAddressPrefix": "Internet",
+                        "destinationAddressPrefix": "[variables('WAPPrefix')]",
+                        "access": "Allow",
+                        "priority": 111,
+                        "direction": "Inbound"
+                     }
+                        },
+                  {
+                     "name": "Deny_trusted_rule",
+                     "properties": {
+                        "description": "Deny traffic to Trusted network",
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "*",
+                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "access": "Deny",
+                        "priority": 200,
+                        "direction": "Outbound"
+                     }
+                  },
+                  {
+                     "name": "Allow_HTTPS_Internal_rule",
+                     "properties": {
+                        "description": "Allow Outbound HTTPS from DMZ Subnet",
+                        "protocol": "Tcp",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "443",
+                        "sourceAddressPrefix": "VIRTUAL_NETWORK",
+                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "access": "Allow",
+                        "priority": 100,
+                        "direction": "Inbound"
+                     }
+                  },
+                {
+                     "name": "Deny_Outbound_DMZ_rule",
+                     "properties": {
+                        "description": "Deny Outbound traffic from DMZ Subnet",
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "VIRTUAL_NETWORK",
+                        "destinationAddressPrefix": "VIRTUAL_NETWORK",
+                        "access": "Deny",
+                        "priority": 200,
+                        "direction": "Inbound"
+                     }
+                  }
+               ]
+            }
+         },
+
+
+
