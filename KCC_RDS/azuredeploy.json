@@ -198,7 +198,7 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces','dc-nic')]"
+                "[resourceId('Microsoft.Network/networkInterfaces','ADDSAZ01-nic')]"
             ],
             "properties": {
                 "hardwareProfile": {
