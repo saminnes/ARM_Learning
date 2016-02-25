@@ -52,7 +52,7 @@
         "subnetName": "KCC_AZNET_SERVERS",
         "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','vnet'),'/subnets/',variables('subnetName'))]",
         "publicIpRef": "publicIp",
-        "assetLocation": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/rds-deployment/",
+        "assetLocation": "https://raw.githubusercontent.com/saminnes/ARM_Learning/master/KCC_RDS/",
         "apiVersion": "2015-06-15"
     },
     "resources": [
