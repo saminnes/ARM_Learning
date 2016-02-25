@@ -413,7 +413,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_D2"
+                    "vmSize": "Standard_A2"
                 },
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]"
@@ -499,7 +499,7 @@
                     "vmSize": "[parameters('rdshVmSize')]"
                 },
                 "osProfile": {
-                    "computerName": "[concat('rdsh-', copyIndex())]",
+                    "computerName": "[concat('RDSSHAZ', copyIndex())]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
                 },
@@ -513,7 +513,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/rdsh-',copyindex(),'-osdisk.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/RDSSHAZ',copyindex(),'-osdisk.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -522,7 +522,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('rdsh-', copyindex(), '-nic'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('RDSSHAZ-', copyindex(), '-nic'))]"
                         }
                     ]
                 }
@@ -531,10 +531,10 @@
                 {
                     "apiVersion": "[variables('apiVersion')]",
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat('rdsh-', copyindex(),'/sessionhost')]",
+                    "name": "[concat('RDSSHAZ', copyindex(),'/sessionhost')]",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', concat('rdsh-', copyindex()))]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', concat('RDSSHAZ', copyindex()))]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -573,7 +573,7 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_D2"
+                    "vmSize": "Standard_A2"
                 },
                 "availabilitySet": {
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]"
@@ -634,7 +634,7 @@
                         "connectionBroker": "[concat('broker.',parameters('adDomainName'))]",
                         "webAccessServer": "[concat('gateway.',parameters('adDomainName'))]",
                         "externalfqdn": "[reference(variables('publicIpRef')).dnsSettings.fqdn]",
-                        "sessionHostNamingPrefix": "rdsh-",
+                        "sessionHostNamingPrefix": "RDSSHAZ",
                         "numberOfRdshInstances": "[parameters('numberOfRdshInstances')]"
                     }
                 },
