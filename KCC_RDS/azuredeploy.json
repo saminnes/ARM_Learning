@@ -378,7 +378,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[concat('rdsh-', copyindex(), '-nic')]",
+            "name": "[concat('RDSSHAZ-', copyindex(), '-nic')]",
             "location": "[resourceGroup().location]",
             "copy": {
                 "name": "rdsh-nic-loop",
@@ -484,7 +484,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[concat('rdsh-', copyindex())]",
+            "name": "[concat('RDSSHAZ', copyindex())]",
             "location": "[resourceGroup().location]",
             "copy": {
                 "name": "rdsh-vm-loop",
@@ -492,7 +492,7 @@
             },
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-                "[concat('Microsoft.Network/networkInterfaces/', 'rdsh-', copyindex(), '-nic')]"
+                "[concat('Microsoft.Network/networkInterfaces/', 'RDSSHAZ-', copyindex(), '-nic')]"
             ],
             "properties": {
                 "hardwareProfile": {
