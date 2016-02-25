@@ -359,6 +359,10 @@
                 "Microsoft.Resources/deployments/updatevnetdns"
             ],
             "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig",   
+                        "properties": {             
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('subnet-id')]"
@@ -371,9 +375,12 @@
               "loadBalancerInboundNatRules": [
                 {
                   "id": "[concat(resourceId('Microsoft.Network/loadBalancers','loadBalancer'),'/inboundNatRules/RDP')]"
+                    }
+                  ]
                 }
-              ]
             }
+        ]
+    }
         },
         {
             "apiVersion": "[variables('apiVersion')]",
