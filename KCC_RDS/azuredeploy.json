@@ -316,7 +316,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "gw-nic",
+            "name": "RDSWGAZ01-nic",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "Microsoft.Network/loadBalancers/loadBalancer",
@@ -352,7 +352,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "cb-nic",
+            "name": "RDSCBAZ01-nic",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "Microsoft.Network/loadBalancers/loadBalancer",
@@ -404,12 +404,12 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "gw-vm",
+            "name": "RDSWGAZ01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                 "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]",
-                "Microsoft.Network/networkInterfaces/gw-nic"
+                "Microsoft.Network/networkInterfaces/RDSWGAZ01-nic"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -433,7 +433,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/gw-vm-osdisk.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/RDSWGAZ01-osdisk.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -442,7 +442,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces','gw-nic')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces','RDSWGAZ01-nic')]"
                         }
                     ]
                 }
@@ -451,10 +451,10 @@
                 {
                     "apiVersion": "[variables('apiVersion')]",
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "gw-vm/gateway",
+                    "name": "RDSWGAZ01/gateway",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', 'gw-vm')]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', 'RDSWGAZ01')]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -564,12 +564,12 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "cb-vm",
+            "name": "RDSCBAZ01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                 "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]",
-                "Microsoft.Network/networkInterfaces/cb-nic"
+                "Microsoft.Network/networkInterfaces/RDSCBAZ01-nic"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -593,7 +593,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/cb-vm-osdisk.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/RDSCBAZ01-vm-osdisk.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -602,7 +602,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces','cb-nic')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces','RDSCBAZ01-nic')]"
                         }
                     ]
                 }
@@ -610,11 +610,11 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "cb-vm/rdsdeployment",
+            "name": "RDSCBAZ01/rdsdeployment",
             "apiVersion": "[variables('apiVersion')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "Microsoft.Compute/virtualMachines/gw-vm/extensions/gateway",
+                "Microsoft.Compute/virtualMachines/RDSWGAZ01/extensions/gateway",
                 "rdsh-vm-loop"
             ],
             "properties": {
