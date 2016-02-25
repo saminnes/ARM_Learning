@@ -35,7 +35,7 @@
         },
         "rdshVmSize": {
             "type": "string",
-            "defaultValue": "Standard_D2",
+            "defaultValue": "Standard_A3",
             "metadata": {
                 "description": "The size of the RDSH VMs"
             }
@@ -46,10 +46,10 @@
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
         "imageSKU": "2012-R2-Datacenter",
-        "vnetAddressRange": "10.0.0.0/16",
-        "subnetAddressRange": "10.0.0.0/24",
-        "dnsServerPrivateIp": "10.0.0.8",
-        "subnetName": "Subnet",
+        "vnetAddressRange": "172.17.0.0/16",
+        "subnetAddressRange": "172.17.1.0/24",
+        "dnsServerPrivateIp": "172.17.1.8",
+        "subnetName": "KCC_AZNET_SERVERS",
         "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','vnet'),'/subnets/',variables('subnetName'))]",
         "publicIpRef": "publicIp",
         "assetLocation": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/rds-deployment/",
@@ -152,6 +152,18 @@
                             "backendPort": 3391,
                             "enableFloatingIP": false
                         }
+                    },
+                    {
+                        "name": "RDP",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers','loadBalancer'),'/frontendIPConfigurations/LBFE')]"
+                            },
+                            "protocol": "tcp",
+                            "frontendPort": 3356,
+                            "backendPort": 3389,
+                            "enableFloatingIP": false
+                        }
                     }
                 ]
             }
@@ -159,7 +171,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "dc-nic",
+            "name": "ADDSAZ01-nic",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "Microsoft.Network/virtualNetworks/vnet"
@@ -182,7 +194,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "dc-vm",
+            "name": "ADDSAZ01",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]",
@@ -190,10 +202,10 @@
             ],
             "properties": {
                 "hardwareProfile": {
-                    "vmSize": "Standard_D2"
+                    "vmSize": "Standard_A2"
                 },
                 "osProfile": {
-                    "computerName": "dc",
+                    "computerName": "ADDSAZ01",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
                 },
@@ -207,16 +219,16 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/dc-vm-os-disk.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/ADDSAZ01-os-disk.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
                     },
                     "dataDisks": [
                         {
-                            "name": "dc-vm-data-disk",
+                            "name": "ADDSAZ01-data-disk",
                             "vhd": {
-                                "Uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/dc-vm-data-disk.vhd')]"
+                                "Uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/ADDSAZ01-data-disk.vhd')]"
                             },
                             "caching": "None",
                             "createOption": "Empty",
@@ -228,7 +240,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces','dc-nic')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces','ADDSAZ01-nic')]"
                         }
                     ]
                 }
@@ -236,11 +248,11 @@
             "resources": [
                 {
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "dc-vm/createadforest",
+                    "name": "ADDSAZ01/createadforest",
                     "apiVersion": "[variables('apiVersion')]",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', 'dc-vm')]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', 'ADDSAZ01')]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -272,7 +284,7 @@
             "type": "Microsoft.Resources/deployments",
             "name": "updatevnetdns",
             "dependsOn": [
-                "Microsoft.Compute/virtualMachines/dc-vm/extensions/createadforest"
+                "Microsoft.Compute/virtualMachines/ADDSAZ01/extensions/createadforest"
             ],
             "properties": {
                 "mode": "Incremental",
@@ -343,20 +355,24 @@
             "name": "cb-nic",
             "location": "[resourceGroup().location]",
             "dependsOn": [
+                "Microsoft.Network/loadBalancers/loadBalancer",
                 "Microsoft.Resources/deployments/updatevnetdns"
             ],
             "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[variables('subnet-id')]"
-                            }
-                        }
-                    }
-                ]
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[variables('subnet-id')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers','loadBalancer'),'/backendAddressPools/LBBAP')]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [
+                {
+                  "id": "[concat(resourceId('Microsoft.Network/loadBalancers','loadBalancer'),'/inboundNatRules/RDP')]"
+                }
+              ]
             }
         },
         {
