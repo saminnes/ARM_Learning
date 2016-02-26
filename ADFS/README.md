@@ -1,4 +1,4 @@
-# Create HA ADFS deployment
+# Create Highly Available ADFS deployment
 
 This template deploys the following resources:
 
