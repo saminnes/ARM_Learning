@@ -54,7 +54,7 @@
             "metadata": {
                 "description": "The size of the WAP VMs"
             }
-        }
+            
     },
     "variables": {
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'RDS', 'Storage')]",
