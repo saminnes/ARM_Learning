@@ -355,28 +355,6 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "cb-nic",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "Microsoft.Resources/deployments/updatevnetdns"
-            ],
-            "properties": {
-                "ipConfigurations": [
-                    {
-                        "name": "ipconfig",
-                        "properties": {
-                            "privateIPAllocationMethod": "Dynamic",
-                            "subnet": {
-                                "id": "[variables('subnet-id')]"
-                            }
-                        }
-                    }
-                ]
-            }
-        },
-        {
-            "apiVersion": "[variables('apiVersion')]",
-            "type": "Microsoft.Network/networkInterfaces",
             "name": "[concat('ADFS-', copyindex(), '-nic')]",
             "location": "[resourceGroup().location]",
             "copy": {
@@ -560,89 +538,6 @@
                 }
             ]
         },
-        {
-            "apiVersion": "[variables('apiVersion')]",
-            "type": "Microsoft.Compute/virtualMachines",
-            "name": "cb-vm",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-                "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]",
-                "Microsoft.Network/networkInterfaces/cb-nic"
-            ],
-            "properties": {
-                "hardwareProfile": {
-                    "vmSize": "Standard_D2"
-                },
-                "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]"
-                },
-                "osProfile": {
-                    "computerName": "broker",
-                    "adminUsername": "[parameters('adminUsername')]",
-                    "adminPassword": "[parameters('adminPassword')]"
-                },
-                "storageProfile": {
-                    "imageReference": {
-                        "publisher": "[variables('imagePublisher')]",
-                        "offer": "[variables('imageOffer')]",
-                        "sku": "[variables('imageSKU')]",
-                        "version": "latest"
-                    },
-                    "osDisk": {
-                        "name": "osdisk",
-                        "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/cb-vm-osdisk.vhd')]"
-                        },
-                        "caching": "ReadWrite",
-                        "createOption": "FromImage"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces','cb-nic')]"
-                        }
-                    ]
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "cb-vm/rdsdeployment",
-            "apiVersion": "[variables('apiVersion')]",
-            "location": "[resourceGroup().location]",
-            "dependsOn": [
-                "Microsoft.Compute/virtualMachines/gw-vm/extensions/gateway",
-                "ADFS-vm-loop"
-            ],
-            "properties": {
-                "publisher": "Microsoft.Powershell",
-                "type": "DSC",
-                "typeHandlerVersion": "2.11",
-                "autoUpgradeMinorVersion": true,
-                "settings": {
-                    "ModulesUrl": "[concat(variables('assetLocation'),'/Configuration.zip')]",
-                    "ConfigurationFunction": "Configuration.ps1\\RDSDeployment",
-                    "Properties": {
-                        "domainName": "[parameters('adDomainName')]",
-                        "adminCreds": {
-                            "UserName": "[parameters('adminUsername')]",
-                            "Password": "PrivateSettingsRef:adminPassword"
-                        },
-                        "connectionBroker": "[concat('broker.',parameters('adDomainName'))]",
-                        "webAccessServer": "[concat('gateway.',parameters('adDomainName'))]",
-                        "externalfqdn": "[reference(variables('publicIpRef')).dnsSettings.fqdn]",
-                        "sessionHostNamingPrefix": "ADFS-",
-                        "numberOfADFSInstances": "[parameters('numberOfADFSInstances')]"
-                    }
-                },
-                "protectedSettings": {
-                    "Items": {
-                        "adminPassword": "[parameters('adminPassword')]"
-                    }
-                }
-            }
-        }
-    ]
+
+       ]
 }
