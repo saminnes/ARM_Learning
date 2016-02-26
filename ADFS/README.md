@@ -1,4 +1,4 @@
-# Create Remote Desktop Sesson Collection deployment
+# Create HA ADFS deployment
 
 This template deploys the following resources:
 
