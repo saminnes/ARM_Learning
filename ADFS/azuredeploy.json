@@ -46,15 +46,16 @@
             "metadata": {
                 "description": "The size of the ADFS VMs"
             }
-        }
         },
+    
         "WAPVmSize": {
             "type": "string",
             "defaultValue": "Standard_D2",
             "metadata": {
                 "description": "The size of the WAP VMs"
             }
-            
+        }
+        
     },
     "variables": {
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'RDS', 'Storage')]",
