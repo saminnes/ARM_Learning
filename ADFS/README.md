@@ -2,7 +2,7 @@
 
 This template deploys the following resources:
 
-<ul><li>storage account;</li><li>vnet, public ip, load balancer;</li><li>domain controller vm;</li><li>a number of ADFS hosts (number defined by 'numberOfADFSInstances' parameter)</li><li>a number of WAP hosts (number defined by 'numberOfWAPInstances' parameter)</li></ul>
+<ul><li>storage account;</li><li>vnet, public ip, load balancer;</li><li>domain controller vm;</li><li>Three availability sets for DC, ADFS and WAP;</li><li>a number of ADFS hosts (number defined by 'numberOfADFSInstances' parameter)</li><li>a number of WAP hosts (number defined by 'numberOfWAPInstances' parameter)</li></ul>
 
 The template will deploy DC, join all vms to the domain and configure ADFS and WAP roles in the deployment.
 
