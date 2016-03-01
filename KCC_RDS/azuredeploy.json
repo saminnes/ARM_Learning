@@ -42,7 +42,7 @@
         }
     },
     "variables": {
-        "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'RDS', 'Storage')]",
+        "storageAccountName": "'kcc', 'RDS', 'Storage')]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
         "imageSKU": "2012-R2-Datacenter",
