@@ -51,7 +51,7 @@
         "subnetAddressRange": "10.0.0.0/24",
         "dnsServerPrivateIp": "10.0.0.4",
         "subnetName": "default",
-        "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','vnet'),'/subnets/',variables('subnetName'))]",
+        "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','SCWIRDS'),'/subnets/',variables('subnetName'))]",
         "publicIpRef": "publicIp",
         "assetLocation": "https://raw.githubusercontent.com/saminnes/ARM_Learning/master/SCWI_RDS/",
         "apiVersion": "2015-06-15"
