@@ -49,7 +49,7 @@
         "imageSKU": "2012-R2-Datacenter",
         "vnetAddressRange": "10.0.0.0/16",
         "subnetAddressRange": "10.0.0.0/24",
-        "dnsServerPrivateIp": "10.0.0.8",
+        "dnsServerPrivateIp": "10.0.0.4",
         "subnetName": "default",
         "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks','vnet'),'/subnets/',variables('subnetName'))]",
         "publicIpRef": "publicIp",
