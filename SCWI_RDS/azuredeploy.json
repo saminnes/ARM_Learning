@@ -43,7 +43,7 @@
     },
     "variables": {
         
-        "storageAccountName": "[concat('kcc', 'rds', 'storage')]",
+        "storageAccountName": "[concat('scwi', 'rds', 'store')]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
         "imageSKU": "2012-R2-Datacenter",
