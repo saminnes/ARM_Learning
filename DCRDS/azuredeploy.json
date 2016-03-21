@@ -76,7 +76,7 @@
         "storageAccountName": "[concat('dacb','rds','storage')]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
-        "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks',parameters('adVnetName')),'/subnets/',parameters('adSubnetName'))]",
+        "subnet-id": "[concat(resourceId('SAMDCtest/providers/Microsoft.Network/virtualNetworks',parameters('adVnetName')),'/subnets/',parameters('adSubnetName'))]",
         "publicIpRef": "publicIp",
         "assetLocation": "https://raw.githubusercontent.com/saminnes/ARM_Learning/master/DCRDS/",
         "apiVersion": "2015-06-15"
