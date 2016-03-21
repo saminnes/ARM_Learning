@@ -73,7 +73,7 @@
         }
     },
     "variables": {
-        "storageAccountName": "[concat(DACB), 'rds', 'storage')]",
+        "storageAccountName": "[concat('dacb','rds','storage')]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
         "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks',parameters('adVnetName')),'/subnets/',parameters('adSubnetName'))]",
@@ -418,7 +418,7 @@
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                 "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]",
-                "Microsoft.Network/networkInterfaces/cb-nic"
+                "Microsoft.Network/networkInterfaces/RDSCBAZTEST-nic"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -463,7 +463,7 @@
             "apiVersion": "[variables('apiVersion')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "Microsoft.Compute/virtualMachines/gw-vm/extensions/gateway",
+                "Microsoft.Compute/virtualMachines/RDSGWAZTEST/extensions/gateway",
                 "rdsh-vm-loop"
             ],
             "properties": {
