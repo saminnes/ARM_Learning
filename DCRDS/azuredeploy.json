@@ -11,8 +11,7 @@
         "adVnetName": {
             "type": "string",
             "allowedValues": [
-                "DABC_AZURE_VNET",
-                "adVNET"
+                "DABC_AZURE_VNET"
             ],
             "metadata": {
                 "description": "The Vnet name of AD domain"
@@ -20,8 +19,7 @@
         },
         "adSubnetName": {
             "allowedValues": [
-                "DACB_AZNET_SERVERS",
-                "adSubnet"
+                "DACB_AZNET_SERVERS"
             ],
             "type": "string",
             "metadata": {
@@ -76,7 +74,7 @@
         "storageAccountName": "[concat('dacb','rds','storage')]",
         "imagePublisher": "MicrosoftWindowsServer",
         "imageOffer": "WindowsServer",
-        "subnet-id": "[concat(resourceId('Microsoft.Network/virtualNetworks',parameters('adVnetName')),'/subnets/',parameters('adSubnetName'))]",
+        "subnet-id": "[concat(resourceId('Production-infrastructure','Microsoft.Network/virtualNetworks',parameters('adVnetName')),'/subnets/',parameters('adSubnetName'))]",
         "publicIpRef": "publicIp",
         "assetLocation": "https://raw.githubusercontent.com/saminnes/ARM_Learning/master/DCRDS/",
         "apiVersion": "2015-06-15"
