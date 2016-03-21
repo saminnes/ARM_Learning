@@ -11,7 +11,8 @@
         "adVnetName": {
             "type": "string",
             "allowedValues": [
-                "DABC_AZURE_VNET"
+                "DABC_AZURE_VNET",
+                "adVNET"
             ],
             "metadata": {
                 "description": "The Vnet name of AD domain"
@@ -19,7 +20,8 @@
         },
         "adSubnetName": {
             "allowedValues": [
-                "DACB_AZNET_SERVERS"
+                "DACB_AZNET_SERVERS",
+                "adSubnet"
             ],
             "type": "string",
             "metadata": {
@@ -162,7 +164,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "gw-nic",
+            "name": "RDSGWAZTEST-nic",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "Microsoft.Network/loadBalancers/loadBalancer"
@@ -197,7 +199,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "cb-nic",
+            "name": "RDSCBAZTEST-nic",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "Microsoft.Network/loadBalancers/loadBalancer"
@@ -219,7 +221,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[concat('rdsh-', copyindex(), '-nic')]",
+            "name": "[concat('RDSSHAZTEST', copyindex(), '-nic')]",
             "location": "[resourceGroup().location]",
             "copy": {
                 "name": "rdsh-nic-loop",
@@ -245,12 +247,12 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "gw-vm",
+            "name": "RDSGWAZTEST",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
                 "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]",
-                "Microsoft.Network/networkInterfaces/gw-nic"
+                "Microsoft.Network/networkInterfaces/RDSGWAZTEST-nic"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -260,7 +262,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]"
                 },
                 "osProfile": {
-                    "computerName": "gw-vm-1",
+                    "computerName": "RDSGWAZTEST",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
                 },
@@ -274,7 +276,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/gw-vm-osdisk.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/RDSGWAZTEST-osdisk.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -283,7 +285,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces','gw-nic')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces','RDSGWAZTEST-nic')]"
                         }
                     ]
                 }
@@ -292,10 +294,10 @@
                 {
                     "apiVersion": "[variables('apiVersion')]",
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "gw-vm/gateway",
+                    "name": "RDSGWAZTEST/gateway",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', 'gw-vm')]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', 'RDSGWAZTEST')]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -325,7 +327,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "[concat('rdsh-', copyindex())]",
+            "name": "[concat('RDSSHAZTEST-', copyindex())]",
             "location": "[resourceGroup().location]",
             "copy": {
                 "name": "rdsh-vm-loop",
@@ -333,7 +335,7 @@
             },
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-                "[concat('Microsoft.Network/networkInterfaces/', 'rdsh-', copyindex(), '-nic')]"
+                "[concat('Microsoft.Network/networkInterfaces/', 'RDSSHAZTEST', copyindex(), '-nic')]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -354,7 +356,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/rdsh-',copyindex(),'-osdisk.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/RDSSHAZTEST',copyindex(),'-osdisk.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -369,7 +371,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('rdsh-', copyindex(), '-nic'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat('RDSSHAZTEST', copyindex(), '-nic'))]"
                         }
                     ]
                 }
@@ -378,10 +380,10 @@
                 {
                     "apiVersion": "[variables('apiVersion')]",
                     "type": "Microsoft.Compute/virtualMachines/extensions",
-                    "name": "[concat('rdsh-', copyindex(),'/sessionhost')]",
+                    "name": "[concat('RDSSHAZTEST-', copyindex(),'/sessionhost')]",
                     "location": "[resourceGroup().location]",
                     "dependsOn": [
-                        "[resourceId('Microsoft.Compute/virtualMachines', concat('rdsh-', copyindex()))]"
+                        "[resourceId('Microsoft.Compute/virtualMachines', concat('RDSSHAZTEST-', copyindex()))]"
                     ],
                     "properties": {
                         "publisher": "Microsoft.Powershell",
@@ -411,7 +413,7 @@
         {
             "apiVersion": "[variables('apiVersion')]",
             "type": "Microsoft.Compute/virtualMachines",
-            "name": "cb-vm",
+            "name": "RDSCBAZTEST",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
@@ -426,7 +428,7 @@
                     "id": "[resourceId('Microsoft.Compute/availabilitySets', 'availabilityset')]"
                 },
                 "osProfile": {
-                    "computerName": "cb-vm-1",
+                    "computerName": "RDSCBAZTEST",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]"
                 },
@@ -440,7 +442,7 @@
                     "osDisk": {
                         "name": "osdisk",
                         "vhd": {
-                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/cb-vm-osdisk.vhd')]"
+                            "uri": "[concat('http://',variables('storageAccountName'),'.blob.core.windows.net/vhds/RDSCBAZTEST-osdisk.vhd')]"
                         },
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
@@ -449,7 +451,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces','cb-nic')]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces','RDSCBAZTEST-nic')]"
                         }
                     ]
                 }
@@ -457,7 +459,7 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "cb-vm/rdsdeployment",
+            "name": "RDSCBAZTEST/rdsdeployment",
             "apiVersion": "[variables('apiVersion')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -478,8 +480,8 @@
                             "UserName": "[parameters('adminUsername')]",
                             "Password": "PrivateSettingsRef:adminPassword"
                         },
-                        "connectionBroker": "[concat('cb-vm-1.',parameters('adDomainName'))]",
-                        "webAccessServer": "[concat('gw-vm-1.',parameters('adDomainName'))]",
+                        "connectionBroker": "[concat('RDSCBAZTEST.',parameters('adDomainName'))]",
+                        "webAccessServer": "[concat('RDSGWAZTEST.',parameters('adDomainName'))]",
                         "externalfqdn": "[reference(variables('publicIpRef')).dnsSettings.fqdn]",
                         "sessionHostNamingPrefix": "rdsh-",
                         "numberOfRdshInstances": "[parameters('numberOfRdshInstances')]"
