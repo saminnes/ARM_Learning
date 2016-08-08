@@ -17,7 +17,7 @@
         "adminUsername": {
             "type": "string",
             "metadata": {
-                "description": "The name of the administrator of the new VM and the domain. Exclusion list: 'administrator'"
+                "description": "The name  of the administrator of the new VM and the domain. Exclusion list: 'administrator'"
             }
         },
         "adminPassword": {
