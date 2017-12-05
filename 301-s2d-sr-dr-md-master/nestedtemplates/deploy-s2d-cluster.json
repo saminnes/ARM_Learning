@@ -1,0 +1,509 @@
+﻿{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "namePrefix": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 8,
+            "metadata": {
+                "description": "Naming prefix for each new resource created. 3-char min, 8-char max, lowercase alphanumeric"
+            }
+        },
+        "remoteNamePrefix": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 8,
+            "metadata": {
+                "description": "Naming prefix for resource records in remote region. 3-char min, 8-char max, lowercase alphanumeric"
+            }
+        },
+        "activeOrPassive": {
+            "type": "string",
+            "allowedValues": [
+                "active",
+                "passive"
+            ],
+            "metadata": {
+                "description": "Specificies whether is cluster is deployed in the Active or Passive DR region"
+            }
+        },
+        "location": {
+            "type": "string",
+            "metadata": {
+                "description": "Azure region in which to deploy S2D cluster"
+            }
+        },
+        "domainName": {
+            "type": "string",
+            "metadata": {
+                "description": "DNS domain name for existing Active Directory domain"
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Administrator of the existing Active Directory Domain"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "minLength": 12,
+            "metadata": {
+                "description": "Password for the Administrator account of the existing Active Directory Domain"
+            }
+        },
+        "nicSubnetUri": {
+            "type": "string",
+            "metadata": {
+                "description": "Resource ID for existing vnet/subnet to which VM NICs should be attached"
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "metadata": {
+                "description": "Size of the S2D VMs to be created"
+            }
+        },
+        "vmCount": {
+            "type": "int",
+            "minValue": 2,
+            "maxValue": 3,
+            "metadata": {
+                "description": "Number of S2D VMs to be created in cluster (Min=2, Max=3)"
+            }
+        },
+        "vmDiskSize": {
+            "type": "int",
+            "minValue": 128,
+            "maxValue": 1023,
+            "metadata": {
+                "description": "Size of each data disk in GB on each S2D VM (Min=128, Max=1023)"
+            }
+        },
+        "vmDiskCount": {
+            "type": "int",
+            "minValue": 2,
+            "maxValue": 32,
+            "metadata": {
+                "description": "Number of data disks on each S2D VM (Min=2, Max=32). Ensure that the VM size you've selected will support this number of data disks."
+            }
+        },
+        "srLogSize": {
+            "type": "int",
+            "minValue": 8,
+            "maxValue": 1023,
+            "metadata": {
+                "description": "Storage Replica Log Size in GB. Ensure that disks selected above will have sufficient space for a Log Volume of this size."
+            }
+        },
+        "srAsyncRPO": {
+            "type": "int",
+            "minValue": 30,
+            "maxValue": 3600,
+            "metadata": {
+                "description": "Storage Replica Recovery Point Objective (RPO) in Seconds"
+            }
+        },
+        "sofsName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of clustered Scale-Out File Server role"
+            }
+        },
+        "remoteSofsName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of clustered Scale-Out File Server role in remote region"
+            }
+        },
+        "shareName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of shared data folder on clustered Scale-Out File Server role"
+            }
+        },
+        "imagePublisher": {
+            "type": "string",
+            "defaultValue": "MicrosoftWindowsServer"
+        },
+        "imageOffer": {
+            "type": "string",
+            "defaultValue": "WindowsServer"
+        },
+        "imageSKU": {
+            "type": "string",
+            "defaultValue": "2016-Datacenter"
+        },
+        "imageVersion": {
+            "type": "string",
+            "defaultValue": "latest"
+        },
+        "_artifactsLocation": {
+            "type": "string"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "apiVersionStorage": "2016-01-01",
+        "witnessStorageName": "[toLower(replace(concat(parameters('namePrefix'),uniqueString(resourceGroup().id),'cw'),'-',''))]",
+        "witnessStorageType": "Standard_LRS",
+        "vmNamePrefix": "[concat(parameters('namePrefix'),'-s2d-')]",
+        "vmAvailabilitySetName": "[concat(variables('vmNamePrefix'),'as')]",
+        "clusterName": "[concat(variables('vmNamePrefix'),'c')]",
+        "remoteClusterName": "[concat(parameters('remoteNamePrefix'),'-s2d-c')]",
+        "vmLoopTemplateURL": "[concat(parameters('_artifactsLocation'),'/nestedtemplates/newVM.json',parameters('_artifactsLocationSasToken'))]",
+        "ipLoopTemplateURL": "[concat(parameters('_artifactsLocation'),'/nestedtemplates/getIpAddress.json',parameters('_artifactsLocationSasToken'))]",
+        "nicStaticTemplateURL": "[concat(parameters('_artifactsLocation'),'/nestedtemplates/setNicStaticIp.json',parameters('_artifactsLocationSasToken'))]",
+        "s2dPrepModulesURL": "[concat(parameters('_artifactsLocation'),'/dsc/prep-s2d.ps1.zip',parameters('_artifactsLocationSasToken'))]",
+        "s2dPrepFunction": "PrepS2D.ps1\\PrepS2D",
+        "s2dConfigModulesURL": "[concat(parameters('_artifactsLocation'),'/dsc/config-s2d-',parameters('activeOrPassive'),'.ps1.zip',parameters('_artifactsLocationSasToken'))]",
+        "s2dConfigFunction": "ConfigS2D.ps1\\ConfigS2D",
+        "faultDomainCount": "[length(take(padLeft('',parameters('vmCount'),'x'),3))]",
+        "updateDomainCount": "[length(take(padLeft('',parameters('vmCount'),'x'),5))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "[variables('vmAvailabilitySetName')]",
+            "apiVersion": "2016-04-30-preview",
+            "location": "[parameters('location')]",
+            "properties": {
+                "platformFaultDomainCount": "[variables('faultDomainCount')]",
+                "platformUpdateDomainCount": "[variables('updateDomainCount')]",
+                "managed": "true"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('witnessStorageName')]",
+            "apiVersion": "2016-01-01",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[variables('witnessStorageType')]"
+            },
+            "kind": "Storage"
+        },
+        {
+            "name": "[concat(variables('vmNamePrefix'), copyindex(), '-nic')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[parameters('location')]",
+            "apiVersion": "2015-06-15",
+            "copy": {
+                "name": "nicLoop",
+                "count": "[parameters('vmCount')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[parameters('nicSubnetUri')]"
+                            },
+                            "primary": true
+                        }
+                    },
+                    {
+                        "name": "ipconfig2",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[parameters('nicSubnetUri')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "name": "[concat(variables('vmNamePrefix'),'0-primaryIp')]",
+            "dependsOn": [
+                "nicLoop"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('ipLoopTemplateURL')]"
+                },
+                "parameters": {
+                    "ipConfig": {
+                        "value": "[reference(concat(variables('vmNamePrefix'), '0-nic')).ipConfigurations[0].properties.privateIPAddress]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "copy": {
+                "name": "primaryIpLoop",
+                "count": "[sub(parameters('vmCount'),1)]"
+            },
+            "name": "[concat(variables('vmNamePrefix'),copyIndex(1),'-primaryIp')]",
+            "dependsOn": [
+                "nicLoop",
+                "[concat(variables('vmNamePrefix'),'0-primaryIp')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('ipLoopTemplateURL')]"
+                },
+                "parameters": {
+                    "ipConfig": {
+                        "value": "[reference(concat(variables('vmNamePrefix'), copyIndex(1), '-nic')).ipConfigurations[0].properties.privateIPAddress]"
+                    },
+                    "ipAddresses": {
+                        "value": "[reference(concat(variables('vmNamePrefix'),copyIndex(),'-primaryIp')).outputs.result.value]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "name": "[concat(variables('vmNamePrefix'),'0-clusterIp')]",
+            "dependsOn": [
+                "nicLoop"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('ipLoopTemplateURL')]"
+                },
+                "parameters": {
+                    "ipConfig": {
+                        "value": "[reference(concat(variables('vmNamePrefix'), '0-nic')).ipConfigurations[1].properties.privateIPAddress]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "copy": {
+                "name": "clusterIpLoop",
+                "count": "[sub(parameters('vmCount'),1)]"
+            },
+            "name": "[concat(variables('vmNamePrefix'),copyIndex(1),'-clusterIp')]",
+            "dependsOn": [
+                "nicLoop",
+                "[concat(variables('vmNamePrefix'),'0-clusterIp')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('ipLoopTemplateURL')]"
+                },
+                "parameters": {
+                    "ipConfig": {
+                        "value": "[reference(concat(variables('vmNamePrefix'), copyIndex(1), '-nic')).ipConfigurations[1].properties.privateIPAddress]"
+                    },
+                    "ipAddresses": {
+                        "value": "[reference(concat(variables('vmNamePrefix'),copyIndex(),'-clusterIp')).outputs.result.value]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "name": "[concat(variables('vmNamePrefix'),'setStaticIp')]",
+            "dependsOn": [
+                "primaryIpLoop",
+                "clusterIpLoop"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('nicStaticTemplateURL')]"
+                },
+                "parameters": {
+                    "vmNamePrefix": {
+                        "value": "[variables('vmNamePrefix')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "vmCount": {
+                        "value": "[parameters('vmCount')]"
+                    },
+                    "ipAddresses1": {
+                        "value": "[reference(concat(variables('vmNamePrefix'),sub(parameters('vmCount'),1),'-primaryIp')).outputs.result.value]"
+                    },
+                    "ipAddresses2": {
+                        "value": "[reference(concat(variables('vmNamePrefix'),sub(parameters('vmCount'),1),'-clusterIp')).outputs.result.value]"
+                    },
+                    "nicSubnetUri": {
+                        "value": "[parameters('nicSubnetUri')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2015-01-01",
+            "copy": {
+                "name": "virtualMachineLoop",
+                "count": "[parameters('vmCount')]"
+            },
+            "name": "[concat(variables('vmNamePrefix'),copyindex(),'-newVM')]",
+            "dependsOn": [
+                "nicLoop",
+                "[resourceId('Microsoft.Compute/availabilitySets', variables('vmAvailabilitySetName'))]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('vmLoopTemplateURL')]"
+                },
+                "parameters": {
+                    "vmName": {
+                        "value": "[concat(variables('vmNamePrefix'), copyindex())]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    },
+                    "vmAvailabilitySetName": {
+                        "value": "[variables('vmAvailabilitySetName')]"
+                    },
+                    "vmSize": {
+                        "value": "[parameters('vmSize')]"
+                    },
+                    "vmDiskCount": {
+                        "value": "[parameters('vmDiskCount')]"
+                    },
+                    "vmDiskSize": {
+                        "value": "[parameters('vmDiskSize')]"
+                    },
+                    "adminUsername": {
+                        "value": "[parameters('adminUsername')]"
+                    },
+                    "adminPassword": {
+                        "value": "[parameters('adminPassword')]"
+                    },
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    },
+                    "imagePublisher": {
+                        "value": "[parameters('imagePublisher')]"
+                    },
+                    "imageOffer": {
+                        "value": "[parameters('imageOffer')]"
+                    },
+                    "imageSKU": {
+                        "value": "[parameters('imageSKU')]"
+                    },
+                    "imageVersion": {
+                        "value": "[parameters('imageVersion')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmNamePrefix'),copyindex(1),'/s2dPrep')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "virtualMachineLoop"
+            ],
+            "copy": {
+                "name": "virtualMachineExtensionLoop",
+                "count": "[sub(parameters('vmCount'),1)]"
+            },
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.20",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "modulesUrl": "[variables('s2dPrepModulesURL')]",
+                    "configurationFunction": "[variables('s2dPrepFunction')]",
+                    "properties": {
+                        "domainName": "[parameters('domainName')]",
+                        "adminCreds": {
+                            "userName": "[parameters('adminUserName')]",
+                            "password": "PrivateSettingsRef:adminPassword"
+                        }
+                    }
+                },
+                "protectedSettings": {
+                    "items": {
+                        "adminPassword": "[parameters('adminPassword')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(variables('vmNamePrefix'),'0/s2dConfig')]",
+            "apiVersion": "2015-06-15",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "virtualMachineLoop",
+                "virtualMachineExtensionLoop",
+                "clusterIpLoop",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('witnessStorageName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Powershell",
+                "type": "DSC",
+                "typeHandlerVersion": "2.20",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "modulesUrl": "[variables('s2dConfigModulesURL')]",
+                    "configurationFunction": "[variables('s2dConfigFunction')]",
+                    "properties": {
+                        "domainName": "[parameters('domainName')]",
+                        "clusterName": "[variables('clusterName')]",
+                        "remoteClusterName": "[variables('remoteClusterName')]",
+                        "sofsName": "[parameters('sofsName')]",
+                        "remoteSofsName": "[parameters('remoteSofsName')]",
+                        "shareName": "[parameters('shareName')]",
+                        "vmNamePrefix": "[variables('vmNamePrefix')]",
+                        "vmCount": "[parameters('vmCount')]",
+                        "clusterIpAddresses": "[reference(concat(variables('vmNamePrefix'),sub(parameters('vmCount'),1),'-clusterIp')).outputs.result.value]",
+                        "vmDiskSize": "[parameters('vmDiskSize')]",
+                        "srLogSize": "[parameters('srLogSize')]",
+                        "srAsyncRPO": "[parameters('srAsyncRPO')]",
+                        "witnessStorageName": "[variables('witnessStorageName')]",
+                        "witnessStorageKey": {
+                            "userName": "PLACEHOLDER-DO-NOT-USE",
+                            "password": "PrivateSettingsRef:witnessStorageKey"
+                        },
+                        "adminCreds": {
+                            "userName": "[parameters('adminUserName')]",
+                            "password": "PrivateSettingsRef:adminPassword"
+                        }
+                    }
+                },
+                "protectedSettings": {
+                    "items": {
+                        "adminPassword": "[parameters('adminPassword')]",
+                        "witnessStorageKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts',variables('witnessStorageName')),variables('apiVersionStorage')).keys[0].value]"
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "sofsName": {
+            "type": "string",
+            "value": "[parameters('sofsName')]"
+        },
+        "shareName": {
+            "type": "string",
+            "value": "[parameters('shareName')]"
+        }
+    }
+}

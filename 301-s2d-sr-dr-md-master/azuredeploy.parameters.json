@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "namePrefix": {
+      "value": "GEN-UNIQUE-6"
+    },
+    "existingDomainName": {
+      "value": "contoso.com"
+    },
+    "adminUsername": {
+      "value": "AzureAdmin"
+    },
+    "adminPassword": {
+      "value": "GEN-PASSWORD"
+    },
+    "regionA": {
+      "value": "Southeast Asia"
+    },
+    "existingRegionAVirtualNetworkName": {
+      "value": "vnetA"
+    },
+    "existingRegionAVirtualNetworkRGName": {
+      "value": "rgA"
+    },    
+    "existingRegionASubnetName": {
+      "value": "default"
+    },
+    "regionB": {
+      "value": "East Asia"
+    },
+    "existingRegionBVirtualNetworkName": {
+      "value": "vnetB"
+    },
+    "existingRegionBVirtualNetworkRGName": {
+      "value": "rgB"
+    },    
+    "existingRegionBSubnetName": {
+      "value": "default"
+    }
+  }
+}
