@@ -121,6 +121,12 @@
         "description": "Name of the existing VNET in region A."
       }
     },
+    "DeployRG": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the existing resource group that this should be deployed to"
+      }
+    },
     "existingRegionASubnetName": {
       "type": "string",
       "metadata": {
@@ -220,7 +226,7 @@
       "name": "[variables('regionADeployS2DCluster')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
-      "resourceGroup": "[parameters('existingRegionAVirtualNetworkRGName')]",
+      "resourceGroup": "[parameters('DeployRG')]",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
@@ -293,7 +299,7 @@
       "name": "[variables('regionBDeployS2DCluster')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2017-05-10",
-      "resourceGroup": "[parameters('existingRegionBVirtualNetworkRGName')]",
+      "resourceGroup": "[parameters('DeployRG')]",
       "dependsOn": [],
       "properties": {
         "mode": "Incremental",
