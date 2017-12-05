@@ -200,7 +200,7 @@
       "metadata": {
         "description": "Location of resources that the script is dependent on such as linked templates and DSC modules"
       },
-      "defaultValue": "https://raw.githubusercontent.com/robotechredmond/301-s2d-sr-dr-md/master"
+      "defaultValue": "https://raw.githubusercontent.com/saminnes/ARM_Learning/301-s2d-sr-dr-md/master"
     },
     "_artifactsLocationSasToken": {
       "type": "securestring",
