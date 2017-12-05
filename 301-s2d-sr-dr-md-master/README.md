@@ -13,7 +13,7 @@ To extend this VNET infrastructure to a VNET-to-VNET infrastructure across Azure
 
 Click the button below to deploy from the portal:
 
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frobotechredmond%2F301-s2d-sr-dr-md%2Fmaster%2Fazuredeploy.json" target="_blank">
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsaminnes%2FARM_Learning%2F301-s2d-sr-dr-md%2Fmaster%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 <a href="http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Frobotechredmond%2F301-s2d-sr-dr-md%2Fmaster%2Fazuredeploy.json" target="_blank">
