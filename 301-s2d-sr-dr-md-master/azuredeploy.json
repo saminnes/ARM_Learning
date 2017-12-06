@@ -109,6 +109,12 @@
         "description": "Azure region for first S2D cluster deployment"
       }
     },
+    "DeployRG": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the existing resource group that this should be deployed to"
+      }
+    },
     "existingRegionAVirtualNetworkRGName": {
       "type": "string",
       "metadata": {
@@ -119,12 +125,6 @@
       "type": "string",
       "metadata": {
         "description": "Name of the existing VNET in region A."
-      }
-    },
-    "DeployRG": {
-      "type": "string",
-      "metadata": {
-        "description": "Name of the existing resource group that this should be deployed to"
       }
     },
     "existingRegionASubnetName": {
