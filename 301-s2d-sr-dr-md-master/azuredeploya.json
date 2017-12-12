@@ -149,8 +149,8 @@
     }
   },
   "variables": {
-    "regionANamePrefix": "[concat(parameters('namePrefix'),'-a')]",
-    "regionBNamePrefix": "[concat(parameters('namePrefix'),'-b')]",
+    "regionANamePrefix": "[concat(parameters('namePrefix'),'-we')]",
+    "regionBNamePrefix": "[concat(parameters('namePrefix'),'-ne')]",
     "regionASofsName": "[concat(variables('regionANamePrefix'),'-',parameters('sofsNameSuffix'))]",
     "regionBSofsName": "[concat(variables('regionBNamePrefix'),'-',parameters('sofsNameSuffix'))]",
     "regionASubnetRef": "[resourceId(parameters('existingRegionAVirtualNetworkRGName'),'Microsoft.Network/virtualNetworks/subnets',parameters('existingRegionAVirtualNetworkName'),parameters('existingRegionASubnetName'))]",
